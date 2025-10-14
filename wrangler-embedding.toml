@@ -1,0 +1,14 @@
+name = "docsearch-embedding"
+main = "embedding-worker.js"
+compatibility_date = "2024-10-14"
+compatibility_flags = ["nodejs_compat"]
+
+# Vectorize binding
+[[vectorize]]
+binding = "VECTORIZE_INDEX"
+index_name = "docsearch-v2"
+
+# Environment variables (optional)
+[vars]
+ENVIRONMENT = "production"
+# Note: Add OPENAI_API_KEY as a secret using: wrangler secret put OPENAI_API_KEY
