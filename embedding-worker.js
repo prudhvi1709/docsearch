@@ -127,8 +127,11 @@ async function handleSearch(request, env) {
 
     const query = data.q;
     const limit = data.ndocs || 15;  // Default to 15 as requested
+    const tone = data.tone || 'Professional';
+    const format = data.format || 'Summary';
+    const language = data.language || 'English';
 
-    console.log(`Searching for: "${query}" (limit: ${limit})`);
+    console.log(`Searching for: "${query}" (limit: ${limit}, tone: ${tone}, format: ${format}, language: ${language})`);
 
     // Generate embedding for the search query using OpenAI
     const queryEmbedding = await generateEmbedding(query, env);
@@ -152,7 +155,7 @@ async function handleSearch(request, env) {
     // Generate summary based on retrieved documents
     let summary = null;
     if (documents.length > 0) {
-      summary = await generateSummary(query, documents, env);
+      summary = await generateSummary(query, documents, env, { tone, format, language });
     }
 
     return new Response(JSON.stringify({ 
@@ -215,10 +218,11 @@ async function generateEmbedding(text, env) {
   return data.data[0].embedding;
 }
 
-async function generateSummary(query, documents, env) {
+async function generateSummary(query, documents, env, options = {}) {
   // Get OpenAI API key from environment variable
   const openaiApiKey = env.OPENAI_API_KEY;
   
+  const { tone = 'Professional', format = 'Summary', language = 'English' } = options;
   
   if (!openaiApiKey) {
     throw new Error('OpenAI API key not configured in worker environment');
@@ -231,6 +235,41 @@ async function generateSummary(query, documents, env) {
     return `**${filename}** (Score: ${doc.score.toFixed(3)}):\n${preview}`;
   }).join('\n\n');
 
+  // Create language-specific instructions
+  const languageInstruction = language === 'Hindi' ? 
+    'Please respond in Hindi (हिंदी).' : 
+    'Please respond in English.';
+
+  // Create format-specific instructions
+  let formatInstruction = '';
+  switch (format) {
+    case 'Bullet Points':
+      formatInstruction = 'Format your response as bullet points.';
+      break;
+    case 'Detailed':
+      formatInstruction = 'Provide a very detailed and comprehensive response.';
+      break;
+    case 'Summary':
+    default:
+      formatInstruction = 'Provide a concise summary.';
+      break;
+  }
+
+  // Create tone-specific instructions
+  let toneInstruction = '';
+  switch (tone) {
+    case 'Casual':
+      toneInstruction = 'Use a casual, friendly tone.';
+      break;
+    case 'Academic':
+      toneInstruction = 'Use a formal, academic tone with proper citations.';
+      break;
+    case 'Professional':
+    default:
+      toneInstruction = 'Use a professional, business-appropriate tone.';
+      break;
+  }
+
   // Create prompt for summary generation
   const prompt = `Based on the following documents, please provide a comprehensive answer to the user's question.
 
@@ -239,7 +278,12 @@ User Question: "${query}"
 Retrieved Documents:
 ${context}
 
-Please provide a detailed answer based on the information from these documents. If the documents don't contain enough information to fully answer the question, mention what information is available and what might be missing. Cite the relevant document names when referencing specific information.
+Instructions:
+- ${languageInstruction}
+- ${formatInstruction}
+- ${toneInstruction}
+- Always cite the relevant document names when referencing specific information.
+- If the documents don't contain enough information to fully answer the question, mention what information is available and what might be missing.
 
 Answer:`;
 

@@ -54,6 +54,11 @@ collapseBtn.addEventListener('click', () => {
 async function performSearch() {
     const query = searchQuery.value.trim();
     const ndocs = 10;
+    
+    // Get form values
+    const tone = document.getElementById('Tone').value;
+    const format = document.getElementById('Format').value;
+    const language = document.getElementById('Language').value;
 
     if (!query) {
         showError('Please enter a search query.');
@@ -70,7 +75,10 @@ async function performSearch() {
             },
             body: JSON.stringify({
                 q: query,
-                ndocs: ndocs
+                ndocs: ndocs,
+                tone: tone,
+                format: format,
+                language: language
             })
         });
 
