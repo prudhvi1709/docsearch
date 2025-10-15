@@ -1,79 +1,128 @@
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Renewable Energy Policies</title>
+    <title>Docsearch</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 </head>
-<body class="bg-dark text-light">
-    <div class="container-fluid py-4">
-        <!-- Header Section -->
-        <div class="row mb-4">
-            <div class="col-12 text-center">
-                <h1 class="display-4 fw-bold text-light mb-3">Renewable Energy Policies</h1>
-                <p class="text-muted fs-6 mb-0">Search over 4,000 renewable energy policy documents from Q1 2024 to understand the most common issues and resolutions.</p>
+<body>
+    <nav class="navbar navbar-expand-lg bg-body-tertiary" data-bs-theme="dark">
+        <div class="container-fluid">
+          <a class="navbar-brand" href=".">Docsearch</a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <div class="nav-item dropdown ms-auto" role="group" aria-label="Toggle dark mode" title="Toggle Dark Mode">
+              <button class="dark-theme-toggle btn btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Toggle theme (auto)">
+                <i class="bi bi-circle-half"></i> <span class="d-lg-none ms-2">Toggle theme</span>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><button class="dropdown-item" data-bs-theme-value="light"><i class="me-2 bi bi-sun-fill"></i> Light</button></li>
+                <li><button class="dropdown-item" data-bs-theme-value="dark"><i class="me-2 bi bi-moon-stars-fill"></i> Dark</button></li>
+                <li><button class="dropdown-item" data-bs-theme-value="auto"><i class="me-2 bi bi-circle-half"></i> Auto</button></li>
+              </ul>
             </div>
+          </div>
+        </div>
+      </nav>
+    
+    <div class="container">
+        <h1 class="display-1 my-5 text-center">Renewable Energy Policies</h1>
+        <form id="search-form">
+            <div class="row justify-content-between mb-3">
+                <!-- Left Column - Description and Checkbox -->
+                <div class="col-12 col-md-4">
+                    <p>Search over 4,000 renewable energy policy documents from Q1 2024 to understand the most common issues and resolutions.</p>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" checked id="suggestFollowup">
+                        <label class="form-check-label" for="suggestFollowup">
+                            Suggest follow-up questions
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Middle Column - Sample Questions -->
+                <div class="col-12 col-md-4" id="sample-questions">
+                    <button class="btn btn-link btn-sm question d-block text-start" type="button" data-query="What commitment did he make on climate action?">What are Bihar's renewable energy targets?</button>
+                    <button class="btn btn-link btn-sm question d-block text-start" type="button" data-query="What are his views on India's foreign policy?">How does private sector participation work?</button>
+                    <button class="btn btn-link btn-sm question d-block text-start" type="button" data-query="How does he see India's digital transformation evolving?">Which states have the best renewable policies?</button>
+                </div>
+                
+                <!-- Right Column - Controls -->
+                <div class="col-12 col-md-4">
+                    <div class="row mb-1">
+                        <label for="Tone" class="col-sm-3 col-form-label-sm">Tone</label>
+                        <div class="col-sm-9">
+                            <select name="Tone" id="Tone" class="form-select form-select-sm" aria-label="Tone">
+                                <option>Professional</option>
+                                <option>Casual</option>
+                                <option>Academic</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-1">
+                        <label for="Format" class="col-sm-3 col-form-label-sm">Format</label>
+                        <div class="col-sm-9">
+                            <select name="Format" id="Format" class="form-select form-select-sm" aria-label="Format">
+                                <option>Summary</option>
+                                <option>Bullet Points</option>
+                                <option>Detailed</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-1">
+                        <label for="Language" class="col-sm-3 col-form-label-sm">Language</label>
+                        <div class="col-sm-9">
+                            <select name="Language" id="Language" class="form-select form-select-sm" aria-label="Language">
+                                <option>English</option>
+                                <option>Hindi</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Search Input -->
+            <div class="input-group mb-3">
+                <input type="search" name="q" id="searchQuery" class="form-control" 
+                       placeholder="Ask a question" aria-label="Ask a question" autofocus required>
+                <button type="submit" class="input-group-text" id="searchBtn">
+                    <i class="bi bi-search"></i>
+                    <span class="visually-hidden">Search</span>
+                </button>
+            </div>
+        </form>
+
+        <!-- Loading Spinner -->
+        <div id="loadingSpinner" class="text-center py-5 d-none">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="text-muted mt-3">Searching and summarizing...</p>
         </div>
 
+        <!-- Error Message -->
+        <div id="errorMessage" class="alert alert-danger d-none" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <span id="errorText"></span>
+        </div>
+
+        <!-- Results Row -->
         <div class="row">
-            <!-- Left Column - Search, Summary and Follow-up -->
-            <div class="col-lg-8">
-                <!-- Sample Questions -->
-                <div class="mb-4">
-                    <div class="mb-3">
-                        <i class="bi bi-check-circle-fill text-primary me-2"></i>
-                        <span class="text-muted">Suggest follow-up questions</span>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-4 mb-2">
-                            <a href="#" class="sample-question text-primary text-decoration-none d-block" data-query="What are Bihar's renewable energy targets?">What are Bihar's renewable energy targets?</a>
-                        </div>
-                        <div class="col-md-4 mb-2">
-                            <a href="#" class="sample-question text-primary text-decoration-none d-block" data-query="How does private sector participation work?">How does private sector participation work?</a>
-                        </div>
-                        <div class="col-md-4 mb-2">
-                            <a href="#" class="sample-question text-primary text-decoration-none d-block" data-query="Which states have the best renewable policies?">Which states have the best renewable policies?</a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Search Form -->
-                <div class="mb-4">
-                    <div class="input-group mb-3">
-                        <input type="text" id="searchQuery" class="form-control form-control-lg bg-dark border-primary text-light" 
-                               placeholder="Ask a question" value="">
-                        <button class="btn btn-outline-light btn-lg px-3" type="button" id="searchBtn">
-                            <i class="bi bi-search"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Loading Spinner -->
-                <div id="loadingSpinner" class="text-center py-5 d-none">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                    <p class="text-muted mt-3">Searching and summarizing...</p>
-                </div>
-
-                <!-- Error Message -->
-                <div id="errorMessage" class="alert alert-danger d-none" role="alert">
-                    <i class="bi bi-exclamation-triangle me-2"></i>
-                    <span id="errorText"></span>
-                </div>
-
-                <!-- Summary Section -->
+            <!-- Left Column - Summary -->
+            <div class="col-12 col-lg-6">
                 <div id="summarySection" class="d-none">
-                    <h5 class="text-light mb-3">Summary</h5>
-                    <div id="summaryContent" class="text-muted mb-4" style="line-height: 1.6;">
+                    <h5 class="mb-3">Summary</h5>
+                    <div class="border rounded p-3 mb-4">
                         <p class="mb-0" id="summaryText"></p>
                     </div>
 
                     <!-- Follow-up Questions -->
                     <div class="mb-4">
-                        <h6 class="text-light mb-3">Follow-up questions:</h6>
+                        <h6 class="mb-3">Follow-up questions:</h6>
                         <ul id="followUpQuestions" class="list-unstyled">
                             <!-- Dynamic follow-up questions will be added here -->
                         </ul>
@@ -81,46 +130,18 @@
                 </div>
             </div>
 
-            <!-- Right Column - Controls and Results -->
-            <div class="col-lg-4">
-                <!-- Controls at top right -->
-                <div class="row mb-4">
-                    <div class="col-4">
-                        <label class="form-label text-muted small">Tone</label>
-                        <select class="form-select form-select-sm bg-dark border-secondary text-light">
-                            <option>Professional</option>
-                            <option>Casual</option>
-                            <option>Academic</option>
-                        </select>
-                    </div>
-                    <div class="col-4">
-                        <label class="form-label text-muted small">Format</label>
-                        <select class="form-select form-select-sm bg-dark border-secondary text-light">
-                            <option>Summary</option>
-                            <option>Bullet Points</option>
-                            <option>Detailed</option>
-                        </select>
-                    </div>
-                    <div class="col-4">
-                        <label class="form-label text-muted small">Language</label>
-                        <select class="form-select form-select-sm bg-dark border-secondary text-light">
-                            <option>English</option>
-                            <option>Hindi</option>
-                        </select>
-                    </div>
-                </div>
-
+            <!-- Right Column - Document Results -->
+            <div class="col-12 col-lg-6">
                 <!-- Expand/Collapse Controls -->
-                <div class="mb-3 text-end">
-                    <button class="btn btn-primary btn-sm me-2" id="expandBtn">
+                <div class="text-end mb-3 d-none" id="expandCollapseButtons">
+                    <button class="btn btn-sm btn-primary me-2" id="expandBtn">
                         <i class="bi bi-plus-lg me-1"></i>Expand
                     </button>
-                    <button class="btn btn-outline-secondary btn-sm" id="collapseBtn">
+                    <button class="btn btn-sm btn-outline-secondary" id="collapseBtn">
                         <i class="bi bi-dash-lg me-1"></i>Collapse
                     </button>
                 </div>
 
-                <!-- Document Results -->
                 <div id="documentResults">
                     <!-- Dynamic document results will be added here -->
                 </div>
@@ -129,205 +150,8 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Worker URL
-        const WORKER_URL = 'https://docsearch-embedding.prudhvi-krovvidi.workers.dev';
-        
-        // Initialize elements
-        const searchQuery = document.getElementById('searchQuery');
-        const searchBtn = document.getElementById('searchBtn');
-        const loadingSpinner = document.getElementById('loadingSpinner');
-        const summarySection = document.getElementById('summarySection');
-        const errorMessage = document.getElementById('errorMessage');
-        const summaryText = document.getElementById('summaryText');
-        const documentResults = document.getElementById('documentResults');
-        const expandBtn = document.getElementById('expandBtn');
-        const collapseBtn = document.getElementById('collapseBtn');
-        const followUpQuestions = document.getElementById('followUpQuestions');
-
-        // Sample question click handlers
-        document.querySelectorAll('.sample-question').forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                const query = e.target.getAttribute('data-query');
-                searchQuery.value = query;
-                performSearch();
-            });
-        });
-
-        // Search button click handler
-        searchBtn.addEventListener('click', performSearch);
-        
-
-        // Enter key handler for search input
-        searchQuery.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                performSearch();
-            }
-        });
-
-        // Expand/Collapse handlers
-        expandBtn.addEventListener('click', () => {
-            document.querySelectorAll('.document-item .collapse').forEach(collapse => {
-                new bootstrap.Collapse(collapse, { show: true });
-            });
-        });
-
-        collapseBtn.addEventListener('click', () => {
-            document.querySelectorAll('.document-item .collapse.show').forEach(collapse => {
-                new bootstrap.Collapse(collapse, { hide: true });
-            });
-        });
-
-        async function performSearch() {
-            const query = searchQuery.value.trim();
-            const ndocs = 10; // Default document count
-
-            if (!query) {
-                showError('Please enter a search query.');
-                return;
-            }
-
-            showLoading();
-
-            try {
-                const response = await fetch(`${WORKER_URL}/search`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        q: query,
-                        ndocs: ndocs
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-
-                const data = await response.json();
-                displayResults(data);
-            } catch (err) {
-                console.error('Search error:', err);
-                showError(`Search failed: ${err.message}`);
-            }
-        }
-
-        function showLoading() {
-            loadingSpinner.classList.remove('d-none');
-            summarySection.classList.add('d-none');
-            errorMessage.classList.add('d-none');
-            documentResults.innerHTML = '';
-            searchBtn.disabled = true;
-        }
-
-        function hideLoading() {
-            loadingSpinner.classList.add('d-none');
-            searchBtn.disabled = false;
-        }
-
-        function showError(message) {
-            hideLoading();
-            document.getElementById('errorText').textContent = message;
-            errorMessage.classList.remove('d-none');
-            summarySection.classList.add('d-none');
-        }
-
-        function displayResults(response) {
-            hideLoading();
-            errorMessage.classList.add('d-none');
-
-            if (!response.documents || response.documents.length === 0) {
-                showError('No documents found for your query.');
-                return;
-            }
-
-            // Display summary in left column
-            if (response.summary && response.summary.text) {
-                summaryText.textContent = response.summary.text;
-            } else {
-                summaryText.textContent = 'No summary available.';
-            }
-
-            // Generate follow-up questions (mock for now)
-            const mockFollowUps = [
-                "What are India's specific targets for renewable energy?",
-                "How does India plan to achieve carbon neutrality?",
-                "What role does technology play in India's climate strategy?"
-            ];
-            
-            followUpQuestions.innerHTML = mockFollowUps.map(question => 
-                `<li class="mb-1"><i class="bi bi-dot text-muted me-1"></i><a href="#" class="text-primary text-decoration-none small sample-question" data-query="${question}">${question}</a></li>`
-            ).join('');
-
-            // Re-attach event listeners to new follow-up questions
-            followUpQuestions.querySelectorAll('.sample-question').forEach(link => {
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const query = e.target.getAttribute('data-query');
-                    searchQuery.value = query;
-                    performSearch();
-                });
-            });
-
-            // Display documents in right column
-            documentResults.innerHTML = response.documents.map((doc, index) => {
-                const percentage = Math.round(doc.score * 100);
-                return `
-                    <div class="document-item mb-3">
-                        <div class="d-flex align-items-start mb-2">
-                            <div class="bg-success rounded-circle me-2 mt-1" style="width: 8px; height: 8px; flex-shrink: 0;"></div>
-                            <div class="flex-grow-1">
-                                <h6 class="text-primary mb-1 lh-base">${escapeHtml(getDocumentTitle(doc))} <span class="text-muted">(${percentage}%)</span></h6>
-                                <p class="text-muted small mb-0 lh-base">${escapeHtml(doc.metadata.content_preview || 'No preview available').substring(0, 150)}...</p>
-                            </div>
-                        </div>
-                        <div class="collapse mt-2" id="collapse${index}">
-                            <div class="ms-3 ps-2 border-start border-secondary">
-                                <p class="small text-light mb-2">${escapeHtml(doc.metadata.content_preview || 'No content available')}</p>
-                                <div class="text-muted small">
-                                    <strong>File:</strong> ${escapeHtml(doc.metadata.filename || 'Unknown')} |
-                                    <strong>Size:</strong> ${formatFileSize(doc.metadata.file_size)} |
-                                    <strong>Score:</strong> ${doc.score.toFixed(4)}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            summarySection.classList.remove('d-none');
-        }
-
-        function getDocumentTitle(doc) {
-            // Extract meaningful title from content preview or filename
-            if (doc.metadata.content_preview) {
-                const preview = doc.metadata.content_preview;
-                const sentences = preview.split(/[.!?]+/);
-                if (sentences.length > 0 && sentences[0].length > 10) {
-                    return sentences[0].trim().substring(0, 80) + (sentences[0].length > 80 ? '...' : '');
-                }
-            }
-            return doc.metadata.filename || `Document ${doc.id}`;
-        }
-
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        function formatFileSize(bytes) {
-            if (!bytes) return 'Unknown';
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            if (bytes === 0) return '0 Bytes';
-            const i = Math.floor(Math.log(bytes) / Math.log(1024));
-            return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
-        }
-
-        // Auto-focus search input
-        searchQuery.focus();
+    <script src="https://cdn.jsdelivr.net/npm/@gramex/ui@0.3/dist/dark-theme.js" type="module"></script>
+    <script src="script.js" type="module"></script>
     </script>
 </body>
 </html>
