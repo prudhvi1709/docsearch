@@ -294,7 +294,7 @@ Answer:`;
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-       model: 'gpt-4o-mini',
+       model: 'gpt-5-mini',
       messages: [
         {
           role: 'system',
@@ -321,7 +321,7 @@ Answer:`;
   const data = await response.json();
   return {
     text: data.choices[0].message.content.trim(),
-       model: 'gpt-4o-mini',
+       model: 'gpt-5-mini',
     tokens_used: data.usage?.total_tokens || 0
   };
 }
