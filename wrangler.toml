@@ -1,6 +1,6 @@
 name = "docsearch-embedding"
 main = "embedding-worker.js"
-compatibility_date = "2024-10-14"
+compatibility_date = "2025-10-21"
 compatibility_flags = ["nodejs_compat"]
 
 # Vectorize binding

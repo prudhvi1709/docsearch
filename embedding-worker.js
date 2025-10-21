@@ -133,8 +133,12 @@ async function handleSearch(request, env) {
 
     console.log(`Searching for: "${query}" (limit: ${limit}, tone: ${tone}, format: ${format}, language: ${language})`);
 
-    // Generate embedding for the search query using OpenAI
-    const queryEmbedding = await generateEmbedding(query, env);
+    // Enhanced query processing for better retrieval
+    const enhancedQuery = enhanceQuery(query);
+    console.log(`Enhanced query: "${enhancedQuery}"`);
+
+    // Generate embedding for the enhanced search query using OpenAI
+    const queryEmbedding = await generateEmbedding(enhancedQuery, env);
     
     // Query Vectorize index
     const results = await env.VECTORIZE_INDEX.query(queryEmbedding, { 
@@ -145,12 +149,18 @@ async function handleSearch(request, env) {
 
     console.log(`Found ${results.matches?.length || 0} matches`);
 
-    // Format results for the client
-    const documents = results.matches?.map(match => ({
+    // Format and filter results for better relevance
+    let documents = results.matches?.map(match => ({
       id: match.id,
       score: match.score,
       metadata: match.metadata || {}
     })) || [];
+
+    // Apply metadata-based filtering and boosting
+    documents = applyRelevanceBoosts(documents, query);
+    
+    // Sort by enhanced score
+    documents.sort((a, b) => (b.enhancedScore || b.score) - (a.enhancedScore || a.score));
 
     // Generate summary based on retrieved documents
     let summary = null;
@@ -305,7 +315,7 @@ Answer:`;
           content: prompt
         }
       ],
-      temperature: 0.7,
+      // Note: GPT-5-mini only supports default temperature (1.0)
     }),
   });
 
@@ -324,4 +334,96 @@ Answer:`;
        model: 'gpt-5-mini',
     tokens_used: data.usage?.total_tokens || 0
   };
+}
+
+function enhanceQuery(query) {
+  // Query enhancement for better semantic matching
+  let enhanced = query;
+  
+  // Policy-specific term mappings
+  const termMappings = {
+    'delivery fleet targets': 'delivery service providers convert fleet electric',
+    'delivery targets': 'delivery service providers fleet electric',
+    'fleet electrification': 'delivery service providers convert fleet electric',
+    'EV targets': 'electric vehicle targets policy',
+    'renewable targets': 'renewable energy capacity targets MW',
+    'solar targets': 'solar energy capacity targets MW installed',
+    'implementation timeline': 'policy implementation measures timeline',
+    'operative period': 'policy operative period effective duration',
+    'nodal agency': 'nodal agency department responsible implementation'
+  };
+  
+  // Apply term mappings
+  for (const [original, replacement] of Object.entries(termMappings)) {
+    if (enhanced.toLowerCase().includes(original.toLowerCase())) {
+      enhanced = enhanced.replace(new RegExp(original, 'gi'), replacement);
+    }
+  }
+  
+  // Add context for specific policy types
+  if (enhanced.toLowerCase().includes('delhi') && enhanced.toLowerCase().includes('electric')) {
+    enhanced += ' Transport Department GNCTD';
+  }
+  
+  if (enhanced.toLowerCase().includes('bihar') && enhanced.toLowerCase().includes('renewable')) {
+    enhanced += ' BREDA nodal agency';
+  }
+  
+  if (enhanced.toLowerCase().includes('haryana') && enhanced.toLowerCase().includes('electric')) {
+    enhanced += ' Government Gazette CHANDIGARH';
+  }
+  
+  return enhanced;
+}
+
+function applyRelevanceBoosts(documents, originalQuery) {
+  const query = originalQuery.toLowerCase();
+  
+  return documents.map(doc => {
+    let boost = 0;
+    const filename = (doc.metadata.filename || '').toLowerCase();
+    const preview = (doc.metadata.content_preview || '').toLowerCase();
+    
+    // Boost for exact state matches
+    const states = ['delhi', 'haryana', 'bihar', 'andhra pradesh', 'chhattisgarh', 'karnataka'];
+    for (const state of states) {
+      if (query.includes(state) && filename.includes(state)) {
+        boost += 0.1;
+      }
+    }
+    
+    // Boost for exact policy type matches
+    if (query.includes('electric vehicle') && filename.includes('electric')) {
+      boost += 0.15;
+    }
+    
+    if (query.includes('solar') && filename.includes('solar')) {
+      boost += 0.15;
+    }
+    
+    if (query.includes('renewable') && filename.includes('renewable')) {
+      boost += 0.1;
+    }
+    
+    // Boost for year matches
+    const years = ['2020', '2021', '2022', '2023', '2024'];
+    for (const year of years) {
+      if (query.includes(year) && (filename.includes(year) || preview.includes(year))) {
+        boost += 0.05;
+      }
+    }
+    
+    // Boost for specific terms in content preview
+    const keyTerms = ['transport department', 'nodal agency', 'delivery service', 'fleet', 'targets', 'MW'];
+    for (const term of keyTerms) {
+      if (query.includes(term) && preview.includes(term)) {
+        boost += 0.02;
+      }
+    }
+    
+    // Apply boost
+    doc.enhancedScore = doc.score + boost;
+    
+    return doc;
+  });
 }

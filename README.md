@@ -7,7 +7,7 @@ This project provides a semantic document search system that ingests documents f
 - `embed_files.py` – Python utility that processes documents, generates embeddings, and upserts them into Cloudflare Vectorize
 - `embedding-worker.js` – Cloudflare Worker script that queries the vectorize index and provides search/answer endpoints
 - `index.html` – Web interface for searching documents and displaying results with AI-powered summaries
-- `wrangler-embedding.toml` – Worker configuration with Vectorize binding and deployment settings
+- `wrangler.toml` – Worker configuration with Vectorize binding and deployment settings
 
 ## Prerequisites
 
@@ -43,7 +43,7 @@ Each vector stores the filename, path, file size, extension, SHA256 content hash
 
 ## Cloudflare Worker deployment
 
-The `wrangler-embedding.toml` configuration file binds the `docsearch` Vectorize index:
+The `wrangler.toml` configuration file binds the `docsearch` Vectorize index:
 
 ```toml
 [[vectorize]]
@@ -54,13 +54,13 @@ index_name = "docsearch"
 Deploy the worker using:
 
 ```bash
-wrangler deploy --config wrangler-embedding.toml
+wrangler deploy
 ```
 
 Ensure your secrets are configured before deploying:
 
 ```bash
-wrangler secret put OPENAI_API_KEY --config wrangler-embedding.toml
+wrangler secret put OPENAI_API_KEY
 ```
 
 During request handling the Worker:
@@ -151,7 +151,7 @@ If you plan to back up raw documents or store additional assets in Cloudflare R2
    - Store these securely; they map to `CLOUDFLARE_R2_ACCESS_KEY_ID` and `CLOUDFLARE_R2_SECRET_ACCESS_KEY` for scripts or services that upload to R2.
 
 4. **Bind the bucket in Wrangler (optional)**  
-   - If the Worker needs direct R2 access, add a binding in `wrangler-embedding.toml`:
+   - If the Worker needs direct R2 access, add a binding in `wrangler.toml`:
      ```toml
      [[r2_buckets]]
      binding = "DOCSEARCH_R2"
@@ -162,9 +162,9 @@ If you plan to back up raw documents or store additional assets in Cloudflare R2
 5. **Add secrets to the Worker**  
    - Run the following commands to store sensitive values:
      ```bash
-     wrangler secret put CLOUDFLARE_R2_TOKEN --config wrangler-embedding.toml
-     wrangler secret put CLOUDFLARE_R2_ACCESS_KEY_ID --config wrangler-embedding.toml
-     wrangler secret put CLOUDFLARE_R2_SECRET_ACCESS_KEY --config wrangler-embedding.toml
+     wrangler secret put CLOUDFLARE_R2_TOKEN
+     wrangler secret put CLOUDFLARE_R2_ACCESS_KEY_ID
+     wrangler secret put CLOUDFLARE_R2_SECRET_ACCESS_KEY
      ```
    - These secrets are available via `env.CLOUDFLARE_R2_TOKEN`, etc., inside the Worker.
 
@@ -196,7 +196,7 @@ curl -s -X POST "https://<your-worker>.workers.dev/search" \
 
 1. **Deploy the Worker:**
    ```bash
-   wrangler deploy --config wrangler-embedding.toml
+   wrangler deploy
    ```
 
 2. **Update the frontend:**
@@ -215,7 +215,7 @@ docsearch/
 ├── index.html              # Web interface for document search
 ├── embedding-worker.js     # Cloudflare Worker for search/AI endpoints
 ├── embed_files.py         # Document processing and embedding script
-├── wrangler-embedding.toml # Worker deployment configuration
+├── wrangler.toml           # Worker deployment configuration
 ├── dummy-data/            # Sample documents for testing
 ├── data/                  # Generated embeddings and metadata
 └── README.md             # This documentation

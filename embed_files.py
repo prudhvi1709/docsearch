@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 class DocumentEmbedder:
     """Advanced document embedder using Cloudflare Worker with sophisticated chunking"""
     
-    def __init__(self, openai_api_key: str, worker_url: str = None, max_tokens: int = 7000, progress_file: str = "embedding_progress.json"):
+    def __init__(self, openai_api_key: str, worker_url: str = None, max_tokens: int = 5000, progress_file: str = "embedding_progress.json"):
         self.openai_client = OpenAI(api_key=openai_api_key)
         self.worker_url = worker_url or "https://docsearch-embedding.prudhvi-krovvidi.workers.dev"
         self.session = requests.Session()
@@ -123,7 +123,7 @@ class DocumentEmbedder:
             return len(text) // 4
     
     def chunk_text_recursive(self, text: str, max_tokens: int = None) -> List[str]:
-        """Recursively split text into chunks that fit within token limits"""
+        """Recursively split text into chunks that fit within token limits with smart section preservation"""
         if max_tokens is None:
             max_tokens = self.max_tokens
         
@@ -134,6 +134,45 @@ class DocumentEmbedder:
         
         # Try different splitting strategies in order of preference
         chunks = []
+        
+        # Strategy 0: Smart section-aware splitting for policy documents
+        # Look for numbered sections, implementation sections, etc.
+        section_patterns = [
+            r'\n\s*\d+\.\s+[A-Z][^.]*(?:Implementation|Policy|Objective|Target|Measure)',
+            r'\n\s*\d+\.\d+\.\s+',  # Subsections like 10.1, 10.2
+            r'\n\s*[A-Z][^.]*(?:Implementation|Timeline|Target|Objective|Measure|Strategy)',
+        ]
+        
+        for pattern in section_patterns:
+            matches = list(re.finditer(pattern, text, re.IGNORECASE))
+            if len(matches) > 1:
+                # Split at section boundaries
+                split_points = [0] + [match.start() for match in matches] + [len(text)]
+                sections = []
+                for i in range(len(split_points) - 1):
+                    section = text[split_points[i]:split_points[i + 1]].strip()
+                    if section:
+                        sections.append(section)
+                
+                if len(sections) > 1:
+                    # Process each section
+                    current_chunk = ""
+                    for section in sections:
+                        test_chunk = current_chunk + ("\n\n" if current_chunk else "") + section
+                        if self.count_tokens(test_chunk) <= max_tokens:
+                            current_chunk = test_chunk
+                        else:
+                            if current_chunk:
+                                chunks.append(current_chunk.strip())
+                            # Recursively chunk the section if it's too large
+                            section_chunks = self.chunk_text_recursive(section, max_tokens)
+                            chunks.extend(section_chunks)
+                            current_chunk = ""
+                    
+                    if current_chunk.strip():
+                        chunks.append(current_chunk.strip())
+                    
+                    return chunks
         
         # Strategy 1: Split by double newlines (paragraphs)
         paragraphs = re.split(r'\n\s*\n', text)
