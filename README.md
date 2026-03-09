@@ -220,3 +220,6 @@ docsearch/
 ├── data/                  # Generated embeddings and metadata
 └── README.md             # This documentation
 ```
+
+---
+> **This is Demo. contains no confidential data/IP**
